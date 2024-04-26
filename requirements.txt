@@ -1,0 +1,5 @@
+openpyxl 
+pandas 
+streamlit 
+scikit-learn
+python-Levenshtein 
