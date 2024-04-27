@@ -100,7 +100,6 @@ def find_similar_texts(df1, df2, column_name, threshold=0.3):
 
 
 
-
 def main():
     st.title("Item Comparison App")
 
