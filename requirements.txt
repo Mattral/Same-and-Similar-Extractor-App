@@ -2,4 +2,6 @@ openpyxl
 pandas 
 streamlit 
 scikit-learn
-python-Levenshtein 
+python-Levenshtein
+matplotlib
+seaborn 
