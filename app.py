@@ -108,6 +108,7 @@ def plot_correlation(df, column):
     plt.title(f"Correlation Plot of {column}")
     return plt.gcf()  # Return the matplotlib figure
 
+st.set_option('deprecation.showPyplotGlobalUse', False)
 
 def plot_correlation_matrix(df):
     # Filter for numeric columns, if the DataFrame has non-numeric columns
