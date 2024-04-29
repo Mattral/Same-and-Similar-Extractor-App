@@ -71,7 +71,7 @@ def find_exact_match(df1, df2, column_name):
     exact_matches = []
     for _, row in merged_df.iterrows():
         exact_matches.append((row[:len(df1)], row[len(df1):]))
-    return exact_matches
+    return matches
 
 
 
