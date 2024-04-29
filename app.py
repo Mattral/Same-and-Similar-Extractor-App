@@ -67,25 +67,10 @@ def find_exact_match(df1, df2, column_name):
 
 def find_exact_match(df1, df2, column_name):
     # Find rows with exact matches in the specified column
+    merged_df = pd.merge(df1, df2, on=column_name, how='inner')
     exact_matches = []
-
-    # Convert to sets for faster comparison
-    df1_set = set(df1[column_name].tolist())
-    df2_set = set(df2[column_name].tolist())
-
-    # Find common elements
-    common_elements = df1_set.intersection(df2_set)
-
-    # Iterate over common elements and find their indices
-    for element in common_elements:
-        # Find rows in df1 matching the element
-        df1_rows = df1[df1[column_name] == element]
-        # Find rows in df2 matching the element
-        df2_rows = df2[df2[column_name] == element]
-        
-        # Append the matched rows and element to exact_matches list
-        exact_matches.append((df1_rows, df2_rows, element))
-
+    for _, row in merged_df.iterrows():
+        exact_matches.append((row[:len(df1)], row[len(df1):]))
     return exact_matches
 
 
