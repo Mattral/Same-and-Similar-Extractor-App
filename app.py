@@ -68,9 +68,9 @@ def find_exact_match(df1, df2, column_name):
 def find_exact_match(df1, df2, column_name):
     # Find rows with exact matches in the specified column
     merged_df = pd.merge(df1, df2, on=column_name, how='inner')
-    exact_matches = []
+    matches = []
     for _, row in merged_df.iterrows():
-        exact_matches.append((row[:len(df1)], row[len(df1):]))
+        matches.append((row[:len(df1)], row[len(df1):]))
     return matches
 
 
