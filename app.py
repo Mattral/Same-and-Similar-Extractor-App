@@ -60,10 +60,13 @@ def read_csv_or_excel(file):
       
 
 def find_exact_match(df1, df2, column_name):
+    # Ensure the column for merging has the same data type
+    df1[column_name] = df1[column_name].astype(str).str.strip()
+    df2[column_name] = df2[column_name].astype(str).str.strip()
+    
     # Find rows with exact matches in the specified column
     matches = pd.merge(df1, df2, on=column_name, how='inner')
     return matches
-
 
 
 
