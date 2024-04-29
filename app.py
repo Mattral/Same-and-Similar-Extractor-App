@@ -58,20 +58,13 @@ def read_csv_or_excel(file):
     else:
         raise ValueError("Unsupported file format. Only CSV and Excel files are supported.")
       
-''' poor performance
+
 def find_exact_match(df1, df2, column_name):
     # Find rows with exact matches in the specified column
     matches = pd.merge(df1, df2, on=column_name, how='inner')
     return matches
-'''
 
-def find_exact_match(df1, df2, column_name):
-    # Find rows with exact matches in the specified column
-    merged_df = pd.merge(df1, df2, on=column_name, how='inner')
-    matches = []
-    for _, row in merged_df.iterrows():
-        matches.append((row[:len(df1)], row[len(df1):]))
-    return matches
+
 
 
 
