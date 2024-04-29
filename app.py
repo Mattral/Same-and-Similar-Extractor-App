@@ -57,11 +57,34 @@ def read_csv_or_excel(file):
         return pd.read_excel(file)
     else:
         raise ValueError("Unsupported file format. Only CSV and Excel files are supported.")
-
+      
+''' poor performance
 def find_exact_match(df1, df2, column_name):
     # Find rows with exact matches in the specified column
     matches = pd.merge(df1, df2, on=column_name, how='inner')
     return matches
+'''
+
+def find_exact_match(df1, df2, column_name):
+    # Find rows with exact matches in the specified column
+    exact_matches = []
+
+    # Convert to sets for faster comparison
+    df1_set = set(df1[column_name].tolist())
+    df2_set = set(df2[column_name].tolist())
+
+    # Find common elements
+    common_elements = df1_set.intersection(df2_set)
+
+    # Iterate over common elements and find their indices
+    for element in common_elements:
+        indices_df1 = df1.index[df1[column_name] == element].tolist()
+        indices_df2 = df2.index[df2[column_name] == element].tolist()
+        for idx_df1 in indices_df1:
+            for idx_df2 in indices_df2:
+                exact_matches.append((idx_df1, idx_df2, element))
+
+    return exact_matches
 
 
 def find_similar_texts(df1, df2, column_name, threshold=0.3):
