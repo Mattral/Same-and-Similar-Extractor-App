@@ -78,13 +78,16 @@ def find_exact_match(df1, df2, column_name):
 
     # Iterate over common elements and find their indices
     for element in common_elements:
-        indices_df1 = df1.index[df1[column_name] == element].tolist()
-        indices_df2 = df2.index[df2[column_name] == element].tolist()
-        for idx_df1 in indices_df1:
-            for idx_df2 in indices_df2:
-                exact_matches.append((idx_df1, idx_df2, element))
+        # Find rows in df1 matching the element
+        df1_rows = df1[df1[column_name] == element]
+        # Find rows in df2 matching the element
+        df2_rows = df2[df2[column_name] == element]
+        
+        # Append the matched rows and element to exact_matches list
+        exact_matches.append((df1_rows, df2_rows, element))
 
     return exact_matches
+
 
 
 def find_similar_texts(df1, df2, column_name, threshold=0.3):
