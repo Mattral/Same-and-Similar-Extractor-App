@@ -52,3 +52,4 @@ streamlit run app.py
 ## About
 
 This application was created to facilitate the comparison of item stocks between warehouses and industries. It utilizes text similarity techniques such as TF-IDF and Levenshtein distance to identify exact matches and similar items between datasets.
+
