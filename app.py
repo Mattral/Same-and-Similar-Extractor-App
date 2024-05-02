@@ -169,7 +169,7 @@ def main():
            # Display exact matches
             st.header("Exact Matches Compare")
             for match in exact_matches:
-                st.write(f"Row {match[0]} in warehouse item stocks is exactly the same as Row {match[1]} in industry item stocks:")
+                st.write(f"Row {match[0]+2} in warehouse item stocks is exactly the same as Row {match[1]+2} in industry item stocks:")
                 st.write(f"Warehouse: {match[2]}")
                 st.write(f"Industry: {match[3]}")
                 st.write(f"____________________")
@@ -178,7 +178,7 @@ def main():
             # Display similar texts
             st.header("Similar (but Not Same) Texts")
             for text_pair in similar_texts:
-                st.write(f"Row {text_pair[0]} in warehouse item stocks is similar to Row {text_pair[1]} in industry item stocks:")
+                st.write(f"Row {text_pair[0]+2} in warehouse item stocks is similar to Row {text_pair[1]+2} in industry item stocks:")
                 st.write(f"Warehouse: {text_pair[2]}")
                 st.write(f"Industry: {text_pair[3]}")
                 st.write(f"____________________")
