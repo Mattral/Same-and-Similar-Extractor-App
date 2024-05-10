@@ -1,3 +1,12 @@
+import pandas as pd
+import streamlit as st
+from difflib import SequenceMatcher
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from Levenshtein import distance as levenshtein_distance
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
 
 ms = st.session_state
 if "themes" not in ms: 
