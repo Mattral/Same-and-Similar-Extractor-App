@@ -71,7 +71,7 @@ def read_parquet_file(parquet_path):
     return pd.read_parquet(parquet_path)
       
 
-def find_exact_match(df1, df2, column_name, chunk_size=500):
+def find_exact_match(df1, df2, column_name, chunk_size=1000):
     # Ensure the column for merging has the same data type and is cleaned
     df1[column_name] = df1[column_name].astype(str).str.strip()
     df2[column_name] = df2[column_name].astype(str).str.strip()
@@ -103,7 +103,7 @@ def find_similar_texts(df1, df2, column_name, threshold=0.3):
 
     similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
-    chunk_size = 500
+    chunk_size = 1000
     for start in range(0, len(df1), chunk_size):
         end = start + chunk_size
         chunk1 = df1.iloc[start:end].reset_index(drop=True)
@@ -180,14 +180,14 @@ def main():
             industry_df = read_parquet_file(industry_parquet)
 
             # Find exact matches
-            exact_match = find_exact_match(warehouse_df, industry_df, warehouse_column)
+            #exact_match = find_exact_match(warehouse_df, industry_df, warehouse_column)
 
             # Find similar texts
             similar_texts, exact_matches = find_similar_texts(warehouse_df, industry_df, warehouse_column)
 
             # Display results
-            st.header("Exact Matches")
-            st.write(exact_match)
+            #st.header("Exact Matches")
+            #st.write(exact_match)
  
 
            # Display exact matches
