@@ -50,17 +50,17 @@ if ms.themes["refreshed"] == False:
 
 
 def read_csv_or_excel_and_convert(file):
-    """Read CSV or Excel file and save as Parquet for faster subsequent access."""
+    """Read CSV or Excel file and save as Parquet for faster subsequent access, read in chunks."""
     file_path = file.name
     parquet_path = file_path + '.parquet'
 
     if file_path.endswith('.csv'):
-        df = pd.read_csv(file)
+        df = pd.read_csv(file, dtype={"float64": "float32", "int64": "int32"})
     elif file_path.endswith('.xlsx') or file_path.endswith('.xls'):
-        df = pd.read_excel(file)
+        df = pd.read_excel(file, dtype={"float64": "float32", "int64": "int32"})
     else:
         raise ValueError("Unsupported file format. Only CSV and Excel files are supported.")
-    
+
     # Save to Parquet
     df.to_parquet(parquet_path)
 
@@ -71,52 +71,69 @@ def read_parquet_file(parquet_path):
     return pd.read_parquet(parquet_path)
       
 
-def find_exact_match(df1, df2, column_name):
-    # Ensure the column for merging has the same data type
+def find_exact_match(df1, df2, column_name, chunk_size=500):
+    # Ensure the column for merging has the same data type and is cleaned
     df1[column_name] = df1[column_name].astype(str).str.strip()
     df2[column_name] = df2[column_name].astype(str).str.strip()
-    
-    # Find rows with exact matches in the specified column
-    matches = pd.merge(df1, df2, on=column_name, how='inner')
+
+    # Initialize an empty DataFrame to store matches
+    matches = pd.DataFrame()
+
+    # Process in chunks
+    num_chunks = (len(df1) + chunk_size - 1) // chunk_size  # Calculate number of chunks
+
+    for i in range(num_chunks):
+        chunk = df1.iloc[i*chunk_size:(i+1)*chunk_size]
+        matched_chunk = pd.merge(chunk, df2, on=column_name, how='inner')
+        matches = pd.concat([matches, matched_chunk], ignore_index=True)
+
     return matches
 
 
 
-
-def find_similar_texts(df1, df2, column_name, threshold=0.3):
-    # Find rows with similar texts in the specified column, excluding exact matches
+def find_similar_texts(df1, df2, column_name, threshold=0.3, chunk_size=500):
     similar_texts = []
     exact_matches = []
 
-    # Convert numeric values to strings
+    # Ensure the column for matching is of type string
     df1[column_name] = df1[column_name].astype(str)
     df2[column_name] = df2[column_name].astype(str)
-    
-    # Concatenate texts from both dataframes
-    all_texts = df1[column_name].tolist() + df2[column_name].tolist()
-    
-    # Compute TF-IDF vectors
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(all_texts)
-    
-    # Compute cosine similarity matrix
-    similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
-    
-    # Iterate over pairs of rows to find similar texts
-    for i, row1 in df1.iterrows():
-        for j, row2 in df2.iterrows():
-            similarity = similarity_matrix[i, len(df1) + j]
-            if similarity >= threshold:
-                # Calculate Levenshtein distance between strings
-                distance = levenshtein_distance(row1[column_name], row2[column_name])
-                max_length = max(len(row1[column_name]), len(row2[column_name]))
-                similarity_score = 1 - (distance / max_length)
-                if similarity_score >= threshold:
-                    if similarity == 1:  # Exact match
-                        exact_matches.append((i, j, row1[column_name], row2[column_name]))
-                    elif similarity < 0.99:  # Similar but not the same
-                        similar_texts.append((i, j, row1[column_name], row2[column_name]))
-    
+
+    # Define a function to process chunks
+    def process_chunk(chunk1, chunk2):
+        # Compute TF-IDF vectors
+        vectorizer = TfidfVectorizer()
+        all_texts = chunk1.tolist() + chunk2.tolist()
+        tfidf_matrix = vectorizer.fit_transform(all_texts)
+
+        # Compute cosine similarity matrix
+        similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
+        
+        # Check pairs
+        for i in range(len(chunk1)):
+            for j in range(len(chunk2)):
+                index2 = j + len(chunk1)
+                similarity = similarity_matrix[i, index2]
+                if similarity >= threshold:
+                    distance = levenshtein_distance(chunk1[i], chunk2[j])
+                    max_length = max(len(chunk1[i]), len(chunk2[j]))
+                    similarity_score = 1 - (distance / max_length)
+                    if similarity_score >= threshold:
+                        if similarity == 1:
+                            exact_matches.append((chunk1.index[i], chunk2.index[j], chunk1[i], chunk2[j]))
+                        else:
+                            similar_texts.append((chunk1.index[i], chunk2.index[j], chunk1[i], chunk2[j]))
+
+    # Iterate over chunks
+    num_chunks_df1 = (len(df1) + chunk_size - 1) // chunk_size  # Calculate number of chunks
+    num_chunks_df2 = (len(df2) + chunk_size - 1) // chunk_size
+
+    for i in range(num_chunks_df1):
+        chunk1 = df1[column_name].iloc[i*chunk_size:(i+1)*chunk_size]
+        for j in range(num_chunks_df2):
+            chunk2 = df2[column_name].iloc[j*chunk_size:(j+1)*chunk_size]
+            process_chunk(chunk1, chunk2)
+
     return similar_texts, exact_matches
 
 def plot_correlation(df, column):
