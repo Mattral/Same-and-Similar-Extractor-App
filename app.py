@@ -90,49 +90,40 @@ def find_exact_match(df1, df2, column_name, chunk_size=500):
     return matches
 
 
-
-def find_similar_texts(df1, df2, column_name, threshold=0.3, chunk_size=500):
+def find_similar_texts(df1, df2, column_name, threshold=0.3):
     similar_texts = []
     exact_matches = []
 
-    # Ensure the column for matching is of type string
     df1[column_name] = df1[column_name].astype(str)
     df2[column_name] = df2[column_name].astype(str)
 
-    # Define a function to process chunks
-    def process_chunk(chunk1, chunk2):
-        # Compute TF-IDF vectors
-        vectorizer = TfidfVectorizer()
-        all_texts = chunk1.tolist() + chunk2.tolist()
-        tfidf_matrix = vectorizer.fit_transform(all_texts)
+    all_texts = df1[column_name].tolist() + df2[column_name].tolist()
+    vectorizer = TfidfVectorizer()
+    tfidf_matrix = vectorizer.fit_transform(all_texts)
 
-        # Compute cosine similarity matrix
-        similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
-        
-        # Check pairs
-        for i in range(len(chunk1)):
-            for j in range(len(chunk2)):
-                index2 = j + len(chunk1)
-                similarity = similarity_matrix[i, index2]
-                if similarity >= threshold:
-                    distance = levenshtein_distance(chunk1[i], chunk2[j])
-                    max_length = max(len(chunk1[i]), len(chunk2[j]))
-                    similarity_score = 1 - (distance / max_length)
-                    if similarity_score >= threshold:
-                        if similarity == 1:
-                            exact_matches.append((chunk1.index[i], chunk2.index[j], chunk1[i], chunk2[j]))
-                        else:
-                            similar_texts.append((chunk1.index[i], chunk2.index[j], chunk1[i], chunk2[j]))
+    similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
 
-    # Iterate over chunks
-    num_chunks_df1 = (len(df1) + chunk_size - 1) // chunk_size  # Calculate number of chunks
-    num_chunks_df2 = (len(df2) + chunk_size - 1) // chunk_size
+    chunk_size = 500
+    for start in range(0, len(df1), chunk_size):
+        end = start + chunk_size
+        chunk1 = df1.iloc[start:end].reset_index(drop=True)
 
-    for i in range(num_chunks_df1):
-        chunk1 = df1[column_name].iloc[i*chunk_size:(i+1)*chunk_size]
-        for j in range(num_chunks_df2):
-            chunk2 = df2[column_name].iloc[j*chunk_size:(j+1)*chunk_size]
-            process_chunk(chunk1, chunk2)
+        for start2 in range(0, len(df2), chunk_size):
+            end2 = start2 + chunk_size
+            chunk2 = df2.iloc[start2:end2].reset_index(drop=True)
+
+            for i, row1 in chunk1.iterrows():
+                for j, row2 in chunk2.iterrows():
+                    similarity = similarity_matrix[start + i, len(df1) + start2 + j]
+                    if similarity >= threshold:
+                        distance = levenshtein_distance(row1[column_name], row2[column_name])
+                        max_length = max(len(row1[column_name]), len(row2[column_name]))
+                        similarity_score = 1 - (distance / max_length)
+                        if similarity_score >= threshold:
+                            if similarity == 1:  # Exact match
+                                exact_matches.append((start + i, start2 + j, row1[column_name], row2[column_name]))
+                            elif similarity < 0.99:  # Similar but not the same
+                                similar_texts.append((start + i, start2 + j, row1[column_name], row2[column_name]))
 
     return similar_texts, exact_matches
 
