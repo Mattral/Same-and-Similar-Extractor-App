@@ -156,8 +156,8 @@ def main():
 
     # Upload files
     st.header("Upload Files")
-    warehouse_file = st.file_uploader("Upload Warehouse Item Stocks (CSV or Excel)", key='warehouse')
-    industry_file = st.file_uploader("Upload Industry Item Stocks (CSV or Excel)", key='industry')
+    warehouse_file = st.file_uploader("Upload File-1 Items (CSV or Excel)", key='warehouse')
+    industry_file = st.file_uploader("Upload File-2 Items (CSV or Excel)", key='industry')
 
     if warehouse_file is not None and industry_file is not None:
         # Read files and convert to Parquet
@@ -170,8 +170,8 @@ def main():
 
         # Column selection interface
         st.header("Select Columns")
-        warehouse_column = st.selectbox("Choose column from warehouse item stocks:", warehouse_columns)
-        industry_column = st.selectbox("Choose column from industry item stocks:", industry_columns)
+        warehouse_column = st.selectbox("Choose column from File-1 item stocks:", warehouse_columns)
+        industry_column = st.selectbox("Choose column from File-2 item stocks:", industry_columns)
 
         # Compare button
         if st.button("Compare"):
@@ -180,20 +180,20 @@ def main():
             industry_df = read_parquet_file(industry_parquet)
 
             # Find exact matches
-            #exact_match = find_exact_match(warehouse_df, industry_df, warehouse_column)
+            exact_match = find_exact_match(warehouse_df, industry_df, warehouse_column)
 
             # Find similar texts
             similar_texts, exact_matches = find_similar_texts(warehouse_df, industry_df, warehouse_column)
 
             # Display results
-            #st.header("Exact Matches")
-            #st.write(exact_match)
+            st.header("Exact Matches")
+            st.write(exact_match)
  
 
            # Display exact matches
             st.header("Exact Matches Compare")
             for match in exact_matches:
-                st.write(f"Row {match[0]+2} in warehouse item stocks is exactly the same as Row {match[1]+2} in industry item stocks:")
+                st.write(f"Row {match[0]+2} in File-1 item stocks is exactly the same as Row {match[1]+2} in File-2 item stocks:")
                 st.write(f"Warehouse: {match[2]}")
                 st.write(f"Industry: {match[3]}")
                 st.write(f"____________________")
@@ -202,7 +202,7 @@ def main():
             # Display similar texts
             st.header("Similar (but Not Same) Texts")
             for text_pair in similar_texts:
-                st.write(f"Row {text_pair[0]+2} in warehouse item stocks is similar to Row {text_pair[1]+2} in industry item stocks:")
+                st.write(f"Row {text_pair[0]+2} in File-1 item stocks is similar to Row {text_pair[1]+2} in File-2 item stocks:")
                 st.write(f"Warehouse: {text_pair[2]}")
                 st.write(f"Industry: {text_pair[3]}")
                 st.write(f"____________________")
@@ -213,7 +213,7 @@ def main():
                 # Calculate correlation
                 correlation = warehouse_df[warehouse_column].corr(industry_df[industry_column])
                 st.header("Correlation")
-                st.write(f"The correlation between {warehouse_column} in warehouse item stocks and {industry_column} in industry item stocks is: {correlation}")
+                st.write(f"The correlation between {warehouse_column} in File-1 item stocks and {industry_column} in File-2 item stocks is: {correlation}")
                 st.write()
 
 
