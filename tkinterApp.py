@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 import pandas as pd
-import time  # Used to simulate delay for demonstration
+import time  # Used to simulate delay
 
 class DataComparerApp:
     def __init__(self, root):
