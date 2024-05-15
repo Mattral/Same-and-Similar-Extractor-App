@@ -2,7 +2,7 @@
 
 # Item Comparison App
 
-This Streamlit web application allows users to compare item stocks between a warehouse and an industry dataset. Users can upload CSV or Excel files containing item stocks for both warehouses and industries, select the columns to compare, and click the "Compare" button to find exact matches and similar (but not the same) texts.
+This Streamlit web application allows users to compare item stocks between 2 excel files; for example- a warehouse and an industry dataset. Users can upload CSV or Excel files containing item stocks for both warehouses and industries, select the columns to compare, and click the "Compare" button to find exact matches and similar (but not the same) texts.
 
 ## Features
 
