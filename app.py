@@ -127,30 +127,6 @@ def find_similar_texts(df1, df2, column_name, threshold=0.3):
 
     return similar_texts, exact_matches
 
-def plot_correlation(df, column):
-    plt.figure(figsize=(8, 6))
-    plt.scatter(df.index, df[column])
-    plt.xlabel("Index")
-    plt.ylabel(column)
-    plt.title(f"Correlation Plot of {column}")
-    return plt.gcf()  # Return the matplotlib figure
-
-st.set_option('deprecation.showPyplotGlobalUse', False)
-
-def plot_correlation_matrix(df):
-    # Filter for numeric columns, if the DataFrame has non-numeric columns
-    numeric_df = df.select_dtypes(include=['number'])
-    correlation_matrix = numeric_df.corr()
-
-    # Plotting the heatmap
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(correlation_matrix, annot=True, fmt=".2f", cmap='coolwarm', cbar=True, linewidths=0.5)
-    plt.title("Correlation Matrix")
-    plt.xticks(rotation=45, ha="right")
-    plt.yticks(rotation=0)
-    plt.tight_layout()  # Adjusts plot to ensure everything fits without overlap
-    st.pyplot()  # Use Streamlit's method to display the plot
-
 def main():
     st.title("Item Comparison App")
 
@@ -217,22 +193,6 @@ def main():
                 st.write()
 
 
-        # Show correlation plot for each dataset
-        if st.button("Correlation for each dataset"):
-            
-            st.subheader("Correlation Plot for 1st Dataset")
-            warehouse_corr_plot = plot_correlation(warehouse_df, warehouse_column)
-            st.pyplot(warehouse_corr_plot)
-                
-            st.subheader("Correlation Plot for 2nd Dataset")
-            industry_corr_plot = plot_correlation(industry_df, industry_column)
-            st.pyplot(industry_corr_plot)
-
-            st.subheader("Correlation Matrix for 1st Dataset")
-            plot_correlation_matrix(warehouse_df)
-
-            st.subheader("Correlation Matrix for 2nd Dataset")
-            plot_correlation_matrix(industry_df)
 
 if __name__ == "__main__":
     main()
