@@ -1,53 +1,7 @@
 import pandas as pd
 import streamlit as st
-from difflib import SequenceMatcher
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from Levenshtein import distance as levenshtein_distance
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
-
-ms = st.session_state
-if "themes" not in ms: 
-  ms.themes = {"current_theme": "light",
-                    "refreshed": True,
-                    
-                    "light": {"theme.base": "dark",
-                              "theme.backgroundColor": "black",
-                              "theme.primaryColor": "#c98bdb",
-                              "theme.secondaryBackgroundColor": "#5591f5",
-                              "theme.textColor": "white",
-                              "theme.textColor": "white",
-                              "button_face": "🌜"},
-
-                    "dark":  {"theme.base": "light",
-                              "theme.backgroundColor": "white",
-                              "theme.primaryColor": "#5591f5",
-                              "theme.secondaryBackgroundColor": "#82E1D7",
-                              "theme.textColor": "#0a1464",
-                              "button_face": "🌞"},
-                    }
-  
-
-def ChangeTheme():
-  previous_theme = ms.themes["current_theme"]
-  tdict = ms.themes["light"] if ms.themes["current_theme"] == "light" else ms.themes["dark"]
-  for vkey, vval in tdict.items(): 
-    if vkey.startswith("theme"): st._config.set_option(vkey, vval)
-
-  ms.themes["refreshed"] = False
-  if previous_theme == "dark": ms.themes["current_theme"] = "light"
-  elif previous_theme == "light": ms.themes["current_theme"] = "dark"
-
-
-btn_face = ms.themes["light"]["button_face"] if ms.themes["current_theme"] == "light" else ms.themes["dark"]["button_face"]
-st.button(btn_face, on_click=ChangeTheme)
-
-if ms.themes["refreshed"] == False:
-  ms.themes["refreshed"] = True
-  st.rerun()
-
 
 def read_csv_or_excel_and_convert(file):
     """Read CSV or Excel file and save as Parquet for faster subsequent access, read in chunks."""
@@ -69,7 +23,6 @@ def read_csv_or_excel_and_convert(file):
 def read_parquet_file(parquet_path):
     """Read data from a Parquet file."""
     return pd.read_parquet(parquet_path)
-      
 
 def find_exact_match(df1, df2, column_name, chunk_size=1500):
     # Ensure the column for merging has the same data type and is cleaned
@@ -89,43 +42,6 @@ def find_exact_match(df1, df2, column_name, chunk_size=1500):
 
     return matches
 
-
-def find_similar_texts(df1, df2, column_name, threshold=0.3):
-    similar_texts = []
-    exact_matches = []
-
-    df1[column_name] = df1[column_name].astype(str)
-    df2[column_name] = df2[column_name].astype(str)
-
-    all_texts = df1[column_name].tolist() + df2[column_name].tolist()
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform(all_texts)
-
-    similarity_matrix = cosine_similarity(tfidf_matrix, tfidf_matrix)
-
-    chunk_size = 1500
-    for start in range(0, len(df1), chunk_size):
-        end = start + chunk_size
-        chunk1 = df1.iloc[start:end].reset_index(drop=True)
-
-        for start2 in range(0, len(df2), chunk_size):
-            end2 = start2 + chunk_size
-            chunk2 = df2.iloc[start2:end2].reset_index(drop=True)
-
-            for i, row1 in chunk1.iterrows():
-                for j, row2 in chunk2.iterrows():
-                    similarity = similarity_matrix[start + i, len(df1) + start2 + j]
-                    if similarity >= threshold:
-                        distance = levenshtein_distance(row1[column_name], row2[column_name])
-                        max_length = max(len(row1[column_name]), len(row2[column_name]))
-                        similarity_score = 1 - (distance / max_length)
-                        if similarity_score >= threshold:
-                            if similarity == 1:  # Exact match
-                                exact_matches.append((start + i, start2 + j, row1[column_name], row2[column_name]))
-                            elif similarity < 0.99:  # Similar but not the same
-                                similar_texts.append((start + i, start2 + j, row1[column_name], row2[column_name]))
-
-    return similar_texts, exact_matches
 
 def main():
     st.title("Item Comparison App")
@@ -158,13 +74,18 @@ def main():
             # Find exact matches
             exact_match = find_exact_match(warehouse_df, industry_df, warehouse_column)
 
-            # Find similar texts
-            similar_texts, exact_matches = find_similar_texts(warehouse_df, industry_df, warehouse_column)
-
             # Display results
             st.header("Exact Matches")
             st.write(exact_match)
- 
+
+            # Display exact matches
+            st.header("Exact Matches Compare")
+            for match in exact_match.itertuples():
+                st.write(f"Row {match.Index + 2} in File-1 item stocks is exactly the same as Row {match.Index + 2} in File-2 item stocks:")
+                st.write(f"Warehouse: {match[1]}")
+                st.write(f"Industry: {match[2]}")
+                st.write(f"____________________")
+                st.write()
 
 
 if __name__ == "__main__":
