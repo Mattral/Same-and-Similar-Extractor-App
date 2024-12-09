@@ -166,33 +166,6 @@ def main():
             st.write(exact_match)
  
 
-           # Display exact matches
-            st.header("Exact Matches Compare")
-            for match in exact_matches:
-                st.write(f"Row {match[0]+2} in File-1 item stocks is exactly the same as Row {match[1]+2} in File-2 item stocks:")
-                st.write(f"Warehouse: {match[2]}")
-                st.write(f"Industry: {match[3]}")
-                st.write(f"____________________")
-                st.write()
-
-            # Display similar texts
-            st.header("Similar (but Not Same) Texts")
-            for text_pair in similar_texts:
-                st.write(f"Row {text_pair[0]+2} in File-1 item stocks is similar to Row {text_pair[1]+2} in File-2 item stocks:")
-                st.write(f"Warehouse: {text_pair[2]}")
-                st.write(f"Industry: {text_pair[3]}")
-                st.write(f"____________________")
-                st.write()
-
-            if warehouse_df[warehouse_column].dtype != "object" and industry_df[industry_column].dtype != "object":
-
-                # Calculate correlation
-                correlation = warehouse_df[warehouse_column].corr(industry_df[industry_column])
-                st.header("Correlation")
-                st.write(f"The correlation between {warehouse_column} in File-1 item stocks and {industry_column} in File-2 item stocks is: {correlation}")
-                st.write()
-
-
 
 if __name__ == "__main__":
     main()
